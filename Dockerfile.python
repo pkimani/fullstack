@@ -1,0 +1,33 @@
+# Use an official Python runtime as a parent image
+FROM python:slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpcre3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Install uWSGI
+RUN pip install uwsgi
+
+# Copy the Django application into the container
+# Make sure to copy as the last step to utilize Docker cache efficiently
+COPY . .
+
+# Change ownership of the app files to www-data for security and compliance with Docker best practices
+RUN chown -R www-data:www-data /app
+
+# Run the container as non-privileged user
+USER www-data
+
+# The CMD command is overridden by docker-compose, so you can specify a default one here if needed
+# CMD ["uwsgi", "--ini", "/app/uwsgi.ini"]
+

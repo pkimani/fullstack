@@ -1,0 +1,37 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    volumes:
+      - ./djangobackend:/app
+      - ./uwsgi/uwsgi.ini:/app/uwsgi.ini  # Map the uwsgi.ini from the correct location
+      - unix_socket:/tmp/  # Shared UNIX socket for uWSGI and nginx
+    networks:
+      - backend
+    environment:
+      - UWSGI_INI=/app/uwsgi.ini
+      - PYTHONBUFFERED=1
+    command: uwsgi --ini /app/uwsgi.ini  # Use uwsgi.ini for uWSGI configuration
+
+  nginx:
+    build:
+      context: ./nginx/
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "443:443"
+      - "80:80"  # Expose HTTP port
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - unix_socket:/tmp/  # Shared UNIX socket
+    depends_on:
+      - django
+    networks:
+      - backend
+
+networks:
+  backend:  # Define a network to facilitate communication between containers
+
+volumes:
+  unix_socket:  # Define a volume for the UNIX socket used by Nginx and uWSGI

@@ -1,0 +1,36 @@
+# Start from the nginx image
+FROM nginx:bookworm
+
+# Create cache and PID directories and set permissions
+RUN mkdir -p /var/cache/nginx /var/run/nginx && chown -R www-data:www-data /var/cache/nginx /var/run/nginx
+
+# Copy the script for generating SSL keys into the container
+COPY ./generate_ssl_keys.sh /usr/local/bin/
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/generate_ssl_keys.sh
+
+# Run the script to generate SSL keys during the container build process
+RUN /usr/local/bin/generate_ssl_keys.sh
+
+# Generate Diffie-Hellman parameters for enhanced SSL configuration
+RUN openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+
+# Set permissions for SSL files
+RUN chmod 644 /etc/ssl/localhost.crt /etc/ssl/localhost.pem && chmod 600 /etc/ssl/localhost.key && chown -R www-data:www-data /etc/ssl/
+
+# Copy nginx configuration files from your nginx directory
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./conf.d/ /etc/nginx/conf.d/
+
+# Ensure the nginx user can write to the PID file location
+RUN touch /var/run/nginx/nginx.pid && chown -R www-data:www-data /var/run/nginx
+
+# Switch to www-data user
+USER www-data
+
+# Expose ports
+EXPOSE 443
+
+# Command to start nginx
+CMD ["nginx", "-g", "daemon off;"]
