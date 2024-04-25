@@ -1,4 +1,93 @@
-.env
-node_modules/
+# General
+*.log
+*.sql
+*.sqlite
+*.pyc
 __pycache__/
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.tmp
+tmp/
+
+# Django specific
+local_settings.py
+db.sqlite3
+/db.sqlite3-journal
+media/
+
+# Node.js specific
+node_modules/
+.npm
+.pnp.js
+.yarn/install-state.gz
+.yarn-error.log*
+.yarn-debug.log*
+yarn.lock
+package-lock.json
+
+# Next.js specific
+/.next/
+/out/
+/build
+.next/cache/
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime
 .DS_Store
+*.tern-port
+
+# Environment configuration files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.schema
+.env.db
+.env*.local
+
+# SSL certificate files
+*.pem
+*.crt
+*.key
+*.csr
+*.cer
+
+# PgBouncer
+/pgbouncer.pid
+
+# Version control
+.git/
+.gitignore
+
+# Misc
+/coverage
+/vercel
+*.tsbuildinfo
+next-env.d.ts
+*.pem  # duplicated SSL file pattern, remove if not needed twice
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
