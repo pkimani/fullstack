@@ -1,3 +1,4 @@
 django
 uwsgi
 psycopg[binary,pool]
+graphene-django
