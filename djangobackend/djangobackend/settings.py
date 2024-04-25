@@ -14,9 +14,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4ly)l2*wtyyl9t3=a@v^ez1o!63uk0i%os-1hdsxt-43a=q50-'
-DEBUG = True  # Turn off Debug in production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'yourdomain.com']
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'MFmdjAaAJdPLqVdAI2jg8qTyCJR4BTWzni1ylzvfK7cqQzypAce4OhNWhdZDHlu9')
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'# Turn off Debug in production
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -73,6 +73,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 12,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
