@@ -10,6 +10,8 @@ services:
       - backend
     env_file:
       - ./.env
+    depends_on:
+      - pgbouncer
     command: uwsgi --ini /app/uwsgi/uwsgi.ini  # Use uwsgi.ini for uWSGI configuration
 
   nginx:
@@ -26,6 +28,31 @@ services:
       - django
     networks:
       - backend
+      
+  postgres_db:
+    image: postgres:bookworm
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    networks:
+      - backend
+      
+  pgbouncer:
+    build:
+      context: ./pgbouncer
+      dockerfile: Dockerfile.pgbouncer
+      args:
+        PG_USER: ${POSTGRES_USER}
+        PG_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "6432:6432"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres_db
+    networks:
+      - backend
 
 networks:
   backend:
@@ -33,3 +60,4 @@ networks:
 volumes:
   unix_socket:
   static:
+  postgres_data:

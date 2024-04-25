@@ -1,0 +1,22 @@
+# Use the official Bitnami PgBouncer image
+FROM bitnami/pgbouncer:latest
+
+# Set environment variables for username and password from build arguments
+ARG PG_USER
+ARG PG_PASSWORD
+
+USER root
+
+# Install PostgreSQL client to generate the md5 password
+RUN install_packages postgresql-client
+
+# Create a directory for PgBouncer configuration files
+RUN mkdir -p /etc/pgbouncer/
+
+# Generate the MD5 hash of the password concatenated with the username
+RUN echo "\"${PG_USER}\" \"md5$(echo -n \"${PG_PASSWORD}${PG_USER}\" | md5sum | cut -d ' ' -f 1)\"" > /etc/pgbouncer/userlist.txt
+
+# Copy the PgBouncer configuration file to the container
+COPY pgbouncer.ini /etc/pgbouncer/pgbouncer.ini
+
+USER 1001

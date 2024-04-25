@@ -62,8 +62,12 @@ WSGI_APPLICATION = 'djangobackend.wsgi.application'
 # Database configuration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'mydatabase'),
+        'USER': os.getenv('POSTGRES_USER', 'myuser'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mypassword'),
+        'HOST': os.getenv('PGBOUNCER_HOST', 'POSTGRES_HOST'), # Name of the service in docker-compose
+        'PORT': os.getenv('PGBOUNCER_LISTEN_PORT', 'POSTGRES_PORT'),
     }
 }
 
