@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.python
     volumes:
-      - unix_socket:/tmp/  # Shared UNIX socket for uWSGI and nginx
+      - unix_socket:/tmp/
       - static:/app/staticfiles
     networks:
       - backend
@@ -12,17 +12,18 @@ services:
       - ./.env
     depends_on:
       - pgbouncer
-    command: uwsgi --ini /app/uwsgi/uwsgi.ini  # Use uwsgi.ini for uWSGI configuration
+      - redis
+    command: uwsgi --ini /app/uwsgi/uwsgi.ini
 
   nginx:
     build:
-      context: ./nginx/
+      context: ./nginx
       dockerfile: Dockerfile.nginx
     ports:
       - "443:443"
-      - "80:80"  # Expose HTTP port
+      - "80:80"
     volumes:
-      - unix_socket:/tmp/  # Shared UNIX socket
+      - unix_socket:/tmp/
       - static:/app/staticfiles
     depends_on:
       - django
@@ -30,7 +31,7 @@ services:
       - backend
       
   postgres_db:
-    image: postgres:bookworm
+    image: postgres:latest
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
@@ -53,6 +54,28 @@ services:
       - postgres_db
     networks:
       - backend
+      
+  mongo_db:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    env_file:
+      - ./.env
+    ports:
+      - "27017:27017"
+    networks:
+      - backend 
+      
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile.redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    env_file:
+      - ./.env
 
 networks:
   backend:
@@ -61,3 +84,5 @@ volumes:
   unix_socket:
   static:
   postgres_data:
+  mongo_data:
+  redis_data:

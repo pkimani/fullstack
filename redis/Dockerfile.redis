@@ -1,0 +1,19 @@
+# Start with the official Redis image
+FROM redis:latest
+
+# Set the working directory
+WORKDIR /
+
+# Ensure the necessary directories exist and set appropriate permissions
+USER root
+RUN mkdir -p /usr/local/etc/redis /usr/local/bin /var/log/redis && chown redis:redis /usr/local/etc/redis /usr/local/bin /var/log/redis && touch /var/log/redis/redis.log && chown redis:redis /var/log/redis/redis.log
+
+# Copy the custom entrypoint script and Redis configuration file into the container
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY redis.conf /usr/local/etc/redis/redis.conf
+
+# Make sure the entrypoint script is executable
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set the entrypoint to the custom script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

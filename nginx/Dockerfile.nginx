@@ -1,5 +1,5 @@
 # Start from the nginx base image
-FROM nginx:bookworm
+FROM nginx:latest
 
 # Create cache and PID directories and set permissions
 RUN mkdir -p /var/cache/nginx /var/run/nginx && chown -R www-data:www-data /var/cache/nginx /var/run/nginx

@@ -1,4 +1,9 @@
 django
+django-environ
 uwsgi
 psycopg[binary,pool]
 graphene-django
+pymongo[snappy,gssapi,srv,tls]
+dnspython
+mongoengine
+django-redis

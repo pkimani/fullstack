@@ -7,16 +7,21 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-import os
+import environ
 from pathlib import Path
+from mongoengine import connect
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()  # read .env file, if exists
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'MFmdjAaAJdPLqVdAI2jg8qTyCJR4BTWzni1ylzvfK7cqQzypAce4OhNWhdZDHlu9')
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'# Turn off Debug in production
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='MFmdjAaAJdPLqVdAI2jg8qTyCJR4BTWzni1ylzvfK7cqQzypAce4OhNWhdZDHlu9')
+DEBUG = env.bool('DJANGO_DEBUG', default=False)  # Turn off Debug in production
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost'])
 
 # Application definition
 INSTALLED_APPS = [
@@ -64,12 +69,48 @@ WSGI_APPLICATION = 'djangobackend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'mydatabase'),
-        'USER': os.getenv('POSTGRES_USER', 'myuser'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'mypassword'),
-        'HOST': os.getenv('PGBOUNCER_HOST', 'POSTGRES_HOST'), # Name of the service in docker-compose
-        'PORT': os.getenv('PGBOUNCER_LISTEN_PORT', 'POSTGRES_PORT'),
+        'NAME': env('POSTGRES_DB', default='mydatabase'),
+        'USER': env('POSTGRES_USER', default='myuser'),
+        'PASSWORD': env('POSTGRES_PASSWORD', default='mypassword'),
+        'HOST': env('PGBOUNCER_HOST', default='POSTGRES_HOST'),  # Name of the service in docker-compose
+        'PORT': env('PGBOUNCER_LISTEN_PORT', default='POSTGRES_PORT'),
     }
+}
+
+# MongoDB settings
+MONGO_DB_NAME = env('MONGO_DB_NAME', default='mydatabase')
+MONGO_HOST = env('MONGO_HOST', default='mongo_db')
+MONGO_PORT = env.int('MONGO_PORT', default=27017)
+MONGO_USERNAME = env('MONGO_INITDB_ROOT_USERNAME', default='admin')
+MONGO_PASSWORD = env('MONGO_INITDB_ROOT_PASSWORD', default='yourpassword')
+
+connect(
+    db=MONGO_DB_NAME,
+    username=MONGO_USERNAME,
+    password=MONGO_PASSWORD,
+    host=MONGO_HOST,
+    port=MONGO_PORT,
+    authentication_source='admin'
+)
+
+# Redis Settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f"redis://{env('REDIS_HOST', default='localhost')}:{env('REDIS_PORT', default='6379')}/{env('REDIS_DB', default='1')}",
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PASSWORD': env('REDIS_PASSWORD', default=None),  # Handle password here
+        }
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+# Graphene-Django GraphQL settings
+GRAPHENE = {
+    'SCHEMA': 'djangobackend.schema.schema'  # Adjust the import path as necessary
 }
 
 # Password validation
@@ -113,8 +154,3 @@ CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-
-
-GRAPHENE = {
-    'SCHEMA': 'djangobackend.schema.schema'  # Adjust the import path as necessary
-}
