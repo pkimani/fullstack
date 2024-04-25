@@ -12,7 +12,6 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir /app/uwsgi/
-
 COPY ./uwsgi/uwsgi.ini /app/uwsgi/uwsgi.ini
 
 # Install uWSGI
@@ -28,9 +27,12 @@ RUN python3 /app/manage.py collectstatic --noinput
 # Change ownership of the app files to www-data for security and compliance with Docker best practices
 RUN chown -R www-data:www-data /app
 
-# Run the container as non-privileged user
+# Add a script to run necessary commands
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Switch to non-privileged user
 USER www-data
 
-# The CMD command is overridden by docker-compose, so you can specify a default one here if needed
-# CMD ["uwsgi", "--ini", "/app/uwsgi/uwsgi.ini"]
-
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uwsgi", "--ini", "/app/uwsgi/uwsgi.ini"]

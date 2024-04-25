@@ -1,4 +1,4 @@
-# Start from the nginx image
+# Start from the nginx base image
 FROM nginx:bookworm
 
 # Create cache and PID directories and set permissions
@@ -17,20 +17,26 @@ RUN /usr/local/bin/generate_ssl_keys.sh
 RUN openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
 
 # Set permissions for SSL files
-RUN chmod 644 /etc/ssl/localhost.crt /etc/ssl/localhost.pem && chmod 600 /etc/ssl/localhost.key && chown -R www-data:www-data /etc/ssl/
+RUN chown -R www-data:www-data /etc/ssl/ && chmod 644 /etc/ssl/certs/*.pem /etc/ssl/*.crt /etc/ssl/*.pem && chmod 600 /etc/ssl/*.key
 
 # Copy nginx configuration files from your nginx directory
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./conf.d/ /etc/nginx/conf.d/
+COPY ./conf.d/default.conf /etc/nginx/conf.d/default.conf
+
+# Ensure all Nginx configuration files are owned by www-data
+RUN chown -R www-data:www-data /etc/nginx/
+
+# Set permissions for Nginx configuration to be readable but not writable by www-data
+RUN chmod 644 /etc/nginx/nginx.conf /etc/nginx/conf.d/*.conf
 
 # Ensure the nginx user can write to the PID file location
-RUN touch /var/run/nginx/nginx.pid && chown -R www-data:www-data /var/run/nginx
+RUN touch /var/run/nginx/nginx.pid && chown www-data:www-data /var/run/nginx/nginx.pid
 
-# Switch to www-data user
+# Switch to use the www-data user
 USER www-data
 
 # Expose ports
-EXPOSE 443
+EXPOSE 443 80
 
-# Command to start nginx
+# Use the default command for Nginx
 CMD ["nginx", "-g", "daemon off;"]
